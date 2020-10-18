@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { ReactElement, useState } from 'react';
 import axios from 'axios';
-// @ts-ignore
-import L from 'leaflet';
+
 import Header from 'view/shared/header';
 import Sidebar from 'view/sidebar';
 import Map from 'view/map';
@@ -11,15 +11,17 @@ import './app.css';
 export interface Layer {
   id: number;
   name: string;
-  geom: { remove: () => void },
+  geom: { setMap: (map: google.maps.Map<Element> | null) => void },
 }
+
+let infoWindow: google.maps.InfoWindow;
 
 function App(): ReactElement {
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [map, setMap] = useState<unknown>(null);
+  const [map, setMap] = useState<google.maps.Map<Element> | null>(null);
 
-  async function search(city: string): Promise<void> {
-    const response = await axios.get(`/api/municipio?name=${city}`);
+  async function onSelectLayer(cityID: number): Promise<void> {
+    const response = await axios.get(`/api/municipio?cityID=${cityID}`);
     const { id, name, geom } = response.data;
 
     const foundLayer = layers.find((l) => l.id === id);
@@ -30,23 +32,45 @@ function App(): ReactElement {
       return;
     }
 
-    const layer = L.geoJSON(JSON.parse(geom), {
-      style() {
-        return { color: '#0000ff' };
-      },
-    }).bindPopup(() => response.data.name).addTo(map);
+    const { coordinates } = JSON.parse(geom);
+
+    const paths: google.maps.LatLngLiteral[] = coordinates[0].map((c: number[]) => ({
+      lng: c[0],
+      lat: c[1],
+    }));
+
+    const layer = new google.maps.Polygon({
+      paths,
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: '#0000FF',
+      fillOpacity: 0.35,
+    });
+    layer.setMap(map);
+
+    infoWindow = new google.maps.InfoWindow();
+    layer.addListener('click', (event: any) => {
+      const contentString = `<b>${name}</b><br>Coordenada do click: <br>${event.latLng.lat()},${event.latLng.lng()}<br>`;
+
+      // Replace the info window's content and position.
+      infoWindow.setContent(contentString);
+      infoWindow.setPosition(event.latLng);
+
+      infoWindow.open(map as google.maps.Map<Element>);
+    });
 
     setLayers((ps) => [...ps, { id, name, geom: layer }]);
   }
 
   function removeLayer(layer: Layer): void {
     setLayers((ps) => ps.filter((l) => l.id !== layer.id));
-    layer.geom.remove();
+    layer.geom.setMap(null);
   }
 
   return (
     <>
-      <Header onSelectLayer={search} />
+      <Header onSelectLayer={onSelectLayer} />
       <div className="container-fluid">
         <div className="row">
 

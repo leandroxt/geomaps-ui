@@ -2,7 +2,7 @@ import React, { ChangeEvent, ReactElement, useState } from 'react';
 import axios from 'axios';
 
 interface Props {
-  onSelectLayer: (name: string) => void;
+  onSelectLayer: (name: number) => void;
 }
 
 export default function Header({ onSelectLayer }: Props): ReactElement<Props> {
@@ -22,8 +22,8 @@ export default function Header({ onSelectLayer }: Props): ReactElement<Props> {
     setSuggestions(() => [...response.data]);
   }
 
-  function onSelectSuggestion(name: string): void {
-    onSelectLayer(name);
+  function onSelectSuggestion(cityID: number): void {
+    onSelectLayer(cityID);
     setSuggestions(() => []);
     setSearch(() => '');
   }
@@ -50,7 +50,7 @@ export default function Header({ onSelectLayer }: Props): ReactElement<Props> {
                 key={s.id}
                 type="button"
                 className="list-group-item list-group-item-action"
-                onClick={() => onSelectSuggestion(s.name)}
+                onClick={() => onSelectSuggestion(s.id)}
               >
                 {s.name}
               </button>

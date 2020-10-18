@@ -1,34 +1,34 @@
-import React, { ReactElement, useEffect } from 'react';
-// @ts-ignore
-import L from 'leaflet';
+import React, { ReactElement, useEffect, useState } from 'react';
+import Loading from 'view/shared/loading';
+import { MAP_ID } from './vars';
 
-import {
-  MAP_ID,
-  MB_ATTR,
-  MB_URL,
-} from './vars';
+const style = { height: '95vh' };
 
 interface Props {
-  setMap: (map: React.SetStateAction<unknown>) => void
+  setMap: (map: React.SetStateAction<google.maps.Map<Element> | null>) => void
 }
 
 export default function Map({ setMap }: Props): ReactElement<Props> {
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const map = L.map(MAP_ID).setView([-22.909518, -47.062351], 11);
+    setTimeout(() => {
+      const el = document.getElementById(MAP_ID) as HTMLElement;
+      const map: google.maps.Map = new google.maps.Map(el, {
+        center: { lat: -22.909518, lng: -47.062351 },
+        zoom: 10,
+      });
 
-    L.tileLayer(MB_URL, {
-      attribution: MB_ATTR,
-      maxZoom: 18,
-      id: 'mapbox/streets-v11',
-      tileSize: 512,
-      zoomOffset: -1,
-      accessToken: 'your.mapbox.access.token',
-    }).addTo(map);
-
-    setMap(() => map);
+      setMap(() => map);
+      setLoading(() => false);
+    }, 1000);
   }, [setMap]);
 
   return (
-    <div id={MAP_ID} style={{ height: '95vh' }} />
+    <>
+      {loading && (
+        <Loading style={style} />
+      )}
+      <div id={MAP_ID} style={style} />
+    </>
   );
 }
