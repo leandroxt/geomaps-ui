@@ -22,7 +22,15 @@ function App(): ReactElement {
 
   async function onSelectLayer(cityID: number): Promise<void> {
     const response = await axios.get(`/api/municipio?cityID=${cityID}`);
-    const { id, name, geom } = response.data;
+    const {
+      id, name, geom, centroid,
+    } = response.data;
+    const coordZoomLayer = centroid.match(/(-?|\+?)?\d+(\.\d+)?/g)
+      .map((c: string) => parseFloat(c));
+    const setCenter: google.maps.LatLngLiteral = {
+      lng: coordZoomLayer[0],
+      lat: coordZoomLayer[1],
+    };
 
     const foundLayer = layers.find((l) => l.id === id);
 
@@ -48,6 +56,9 @@ function App(): ReactElement {
       fillOpacity: 0.35,
     });
     layer.setMap(map);
+    if (map) {
+      map.setCenter(setCenter);
+    }
 
     infoWindow = new google.maps.InfoWindow();
     layer.addListener('click', (event: any) => {
