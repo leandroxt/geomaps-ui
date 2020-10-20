@@ -1,15 +1,28 @@
 import React, { ReactElement } from 'react';
-import { Layer } from '../../app';
+import { useDispatch, useSelector } from 'react-redux';
+import { Layer } from 'modules/map';
+import { DispatchType, State, ACTIONS } from 'store';
 
-interface Props {
-  layers: Layer[];
-  onRemoveLayer: (layer: Layer) => void;
-}
+export default function Sidebar(): ReactElement {
+  const layers = useSelector<State, Layer[]>((s) => s.layers);
+  const dispatch = useDispatch<DispatchType>();
 
-export default function Sidebar({
-  layers,
-  onRemoveLayer,
-}: Props): ReactElement<Props> {
+  function centralizeLayer(l: Layer) {
+    return () => {
+      l.polygon.getMap().setCenter(l.centroid);
+    };
+  }
+
+  function removePolygon(l: Layer) {
+    return () => {
+      l.polygon.setMap(null);
+      dispatch({
+        type: ACTIONS.REMOVE_LAYER,
+        payload: l.id,
+      });
+    };
+  }
+
   return (
     <div className="sidebar-sticky pt-3">
       <h6 className="sidebar-heading px-3 mt-4 mb-1 text-muted">
@@ -30,12 +43,22 @@ export default function Sidebar({
         {layers.map((layer) => (
           <li key={layer.id} className="nav-item">
             <span className="d-flex align-items-center ">
-              <button className="nav-link btn btn-sm" type="button" onClick={() => onRemoveLayer(layer)}>
+              <button
+                className="nav-link btn btn-sm"
+                type="button"
+                onClick={removePolygon(layer)}
+              >
                 <span className="material-icons">
                   delete
                 </span>
               </button>
-              {layer.name}
+              <button
+                type="button"
+                className="btn btn-link"
+                onClick={centralizeLayer(layer)}
+              >
+                {layer.name}
+              </button>
             </span>
           </li>
         ))}

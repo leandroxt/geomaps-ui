@@ -1,14 +1,12 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import Loading from 'view/shared/loading';
+import { setGoogleMap } from 'modules/map';
+
 import { MAP_ID } from './vars';
 
 const style = { height: '95vh' };
 
-interface Props {
-  setMap: (map: React.SetStateAction<google.maps.Map<Element> | null>) => void
-}
-
-export default function Map({ setMap }: Props): ReactElement<Props> {
+export default function Map(): ReactElement {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setTimeout(() => {
@@ -18,10 +16,10 @@ export default function Map({ setMap }: Props): ReactElement<Props> {
         zoom: 10,
       });
 
-      setMap(() => map);
+      setGoogleMap(map);
       setLoading(() => false);
     }, 1000);
-  }, [setMap]);
+  }, []);
 
   return (
     <>

@@ -1,13 +1,14 @@
 import React, { ChangeEvent, ReactElement, useState } from 'react';
-import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import axios from 'modules/axios';
 
-interface Props {
-  onSelectLayer: (name: number) => void;
-}
+import { onCreatePolygon } from 'modules/map';
+import { DispatchType, ACTIONS } from 'store';
 
-export default function Header({ onSelectLayer }: Props): ReactElement<Props> {
+export default function Header(): ReactElement {
   const [search, setSearch] = useState<string>('');
   const [suggestions, setSuggestions] = useState<{ id: number; name: string }[]>([]);
+  const dispatch = useDispatch<DispatchType>();
 
   async function onSearch({ currentTarget }: ChangeEvent<HTMLInputElement>): Promise<void> {
     const { value } = currentTarget;
@@ -18,14 +19,18 @@ export default function Header({ onSelectLayer }: Props): ReactElement<Props> {
       return;
     }
 
-    const response = await axios.get(`/api/municipio/search?name=${value}`);
+    const response = await axios.get(`/municipio/search?name=${value}`);
     setSuggestions(() => [...response.data]);
   }
 
-  function onSelectSuggestion(cityID: number): void {
-    onSelectLayer(cityID);
+  async function onSelectSuggestion(cityID: number): Promise<void> {
+    const layer = await onCreatePolygon(cityID);
     setSuggestions(() => []);
     setSearch(() => '');
+    dispatch({
+      type: ACTIONS.SET_LAYER,
+      payload: layer,
+    });
   }
 
   return (
