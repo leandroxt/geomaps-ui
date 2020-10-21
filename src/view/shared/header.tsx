@@ -1,13 +1,14 @@
 import React, { ChangeEvent, ReactElement, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'modules/axios';
 
-import { onCreatePolygon } from 'modules/map';
-import { DispatchType, ACTIONS } from 'store';
+import { Layer, onCreatePolygon } from 'modules/map';
+import { DispatchType, ACTIONS, State } from 'store';
 
 export default function Header(): ReactElement {
   const [search, setSearch] = useState<string>('');
   const [suggestions, setSuggestions] = useState<{ id: number; name: string }[]>([]);
+  const layers = useSelector<State, Layer[]>((s) => s.layers);
   const dispatch = useDispatch<DispatchType>();
 
   async function onSearch({ currentTarget }: ChangeEvent<HTMLInputElement>): Promise<void> {
@@ -24,6 +25,12 @@ export default function Header(): ReactElement {
   }
 
   async function onSelectSuggestion(cityID: number): Promise<void> {
+    const el = layers.find(({ id }) => cityID === id);
+    if (el) {
+      // eslint-disable-next-line no-alert
+      alert('Layer já existente no mapa');
+      return;
+    }
     const layer = await onCreatePolygon(cityID);
     setSuggestions(() => []);
     setSearch(() => '');

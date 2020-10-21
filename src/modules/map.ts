@@ -37,13 +37,14 @@ function createPolygon(paths: google.maps.LatLngLiteral[]): google.maps.Polygon 
   });
 }
 
-// function placeMarkerAndPanTo(latLng: google.maps.LatLng): void {
-//   const marker = new google.maps.Marker({
-//     position: latLng,
-//   });
-//   marker.setMap(map);
-//   map.panTo(latLng);
-// }
+export function placeMarkerAndPanTo(latLng: google.maps.LatLngLiteral): void {
+  const marker = new google.maps.Marker({
+    position: latLng,
+  });
+  marker.setMap(map);
+  map.setZoom(11);
+  map.panTo(latLng);
+}
 
 // export function onClickMap(e: google.maps.MouseEvent): void {
 //   placeMarkerAndPanTo(e.latLng);

@@ -36,7 +36,9 @@ module.exports = {
       }
     ],
     "react/jsx-filename-extension": [1, { "extensions": [".ts", ".tsx"] }],
-    "jsx-a11y/label-has-associated-control": "off"
+    "jsx-a11y/label-has-associated-control": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"]
   },
   settings: {
     "import/resolver": {
