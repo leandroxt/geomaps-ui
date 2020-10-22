@@ -9,7 +9,7 @@ import style from './modal.module.css';
 interface Props {
   isOpen: boolean;
   onClose: (e: MouseEvent<HTMLButtonElement>) => void;
-  children: ReactElement | ReactElement[];
+  children: ReactElement | ReactElement[] | Element;
 }
 
 export default function Modal({ isOpen, onClose, children }: Props): ReactElement<Props> {

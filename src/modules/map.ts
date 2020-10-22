@@ -1,5 +1,7 @@
 import axios from 'modules/axios';
 
+// https://turfjs.org/
+
 let map: google.maps.Map<Element>;
 let infoWindow: google.maps.InfoWindow;
 
@@ -26,6 +28,14 @@ export function setGoogleMap(googleMap: google.maps.Map<Element>): void {
 //   });
 // }
 
+function fromCoordinatesToGoogleMapPaths(p: Array<number[][]>): google.maps.LatLngLiteral[] {
+  const [coordinates] = p;
+  return coordinates.map((c): google.maps.LatLngLiteral => ({
+    lng: c[0],
+    lat: c[1],
+  }));
+}
+
 function createPolygon(paths: google.maps.LatLngLiteral[]): google.maps.Polygon {
   return new google.maps.Polygon({
     paths,
@@ -42,7 +52,12 @@ export function placeMarkerAndPanTo(latLng: google.maps.LatLngLiteral): void {
     position: latLng,
   });
   marker.setMap(map);
-  map.setZoom(11);
+  map.setZoom(18);
+  map.panTo(latLng);
+}
+
+export function panToAndZoom(latLng: google.maps.LatLngLiteral): void {
+  map.setZoom(12);
   map.panTo(latLng);
 }
 
@@ -60,13 +75,8 @@ export async function onCreatePolygon(cityID: number): Promise<Layer> {
   } = data;
   const { coordinates } = JSON.parse(geom);
 
-  const paths: google.maps.LatLngLiteral[] = coordinates[0].map((c: number[]) => ({
-    lng: c[0],
-    lat: c[1],
-  }));
-
+  const paths = fromCoordinatesToGoogleMapPaths(coordinates);
   const layer = createPolygon(paths);
-
   layer.setMap(map);
 
   const coordZoomLayer: number[] = centroid.match(/(-?|\+?)?\d+(\.\d+)?/g)

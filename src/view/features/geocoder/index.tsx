@@ -4,6 +4,7 @@ import React, {
 } from 'react';
 import axios from 'modules/axios';
 import { placeMarkerAndPanTo } from 'modules/map';
+import { FeatureComponentProps as Props } from 'view/features';
 
 interface Location {
   location: google.maps.LatLngLiteral;
@@ -18,10 +19,6 @@ const RESPONSE_STATUS = {
   ZERO_RESULTS: 'ZERO_RESULTS',
   OK: 'OK',
 };
-
-interface Props {
-  onClose: () => void;
-}
 
 export default function Geocoder({ onClose }: Props): ReactElement<Props> {
   const [results, setResults] = useState<Address[]>([]);
@@ -51,6 +48,9 @@ export default function Geocoder({ onClose }: Props): ReactElement<Props> {
   function openLocation(a: Address): () => void {
     return () => {
       placeMarkerAndPanTo(a.geometry.location);
+      setStatus(() => '');
+      setAddress(() => '');
+      setResults(() => []);
       onClose();
     };
   }
