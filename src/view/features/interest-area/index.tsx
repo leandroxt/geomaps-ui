@@ -10,7 +10,11 @@ interface Props {
   onClose: () => void;
 }
 
-export default function InterestArea({ event, drawingManager, onClose }: Props): ReactElement<Props> {
+export default function InterestArea({
+  event,
+  drawingManager,
+  onClose,
+}: Props): ReactElement<Props> {
   const [areaName, setAreaName] = useState('');
   function onChangeName({ currentTarget }: ChangeEvent<HTMLInputElement>): void {
     setAreaName(() => currentTarget.value);

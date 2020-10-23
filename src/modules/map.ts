@@ -12,6 +12,53 @@ export interface Layer {
   polygon: google.maps.Polygon;
 }
 
+export function createCircle(
+  center: google.maps.LatLngLiteral | google.maps.LatLng,
+  radius: number,
+): google.maps.Circle {
+  return new google.maps.Circle({
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35,
+    center,
+    radius,
+  });
+}
+
+async function getUsersAreas(): Promise<void> {
+  const { data } = await axios.get('/areas');
+  data.forEach(({
+    name,
+    center,
+    radius,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }: any) => {
+    const coord: number[] = center.match(/(-?|\+?)?\d+(\.\d+)?/g)
+      .map((c: string) => parseFloat(c));
+
+    const latlng: google.maps.LatLngLiteral = {
+      lng: coord[0],
+      lat: coord[1],
+    };
+
+    const circle = createCircle(latlng, radius);
+    circle.setMap(map);
+
+    infoWindow = new google.maps.InfoWindow();
+    circle.addListener('click', (mEvent) => {
+      const contentString = `<b>${name}</b><br>Coordenada da área: <br>${latlng.lat},${latlng.lng}<br>`;
+
+      // Replace the info window's content and position.
+      infoWindow.setContent(contentString);
+      infoWindow.setPosition(mEvent.latLng);
+
+      infoWindow.open(map as google.maps.Map<Element>);
+    });
+  });
+}
+
 function drawManager(openDrawer: (
   e: google.maps.drawing.OverlayCompleteEvent,
   drawingManager: google.maps.drawing.DrawingManager,
@@ -54,18 +101,7 @@ export function setGoogleMap(
 ): void {
   map = googleMap;
   drawManager(openDrawer);
-}
-
-export function createCircle(center: google.maps.LatLng, radius: number): google.maps.Circle {
-  return new google.maps.Circle({
-    strokeColor: '#FF0000',
-    strokeOpacity: 0.8,
-    strokeWeight: 2,
-    fillColor: '#FF0000',
-    fillOpacity: 0.35,
-    center,
-    radius,
-  });
+  getUsersAreas();
 }
 
 function fromCoordinatesToGoogleMapPaths(p: Array<number[][]>): google.maps.LatLngLiteral[] {
