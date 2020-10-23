@@ -12,21 +12,61 @@ export interface Layer {
   polygon: google.maps.Polygon;
 }
 
-export function setGoogleMap(googleMap: google.maps.Map<Element>): void {
-  map = googleMap;
+function drawManager(openDrawer: (
+  e: google.maps.drawing.OverlayCompleteEvent,
+  drawingManager: google.maps.drawing.DrawingManager,
+) => void): void {
+  const drawingManager = new google.maps.drawing.DrawingManager({
+    drawingMode: null,
+    drawingControl: true,
+    drawingControlOptions: {
+      position: google.maps.ControlPosition.TOP_CENTER,
+      drawingModes: [
+        google.maps.drawing.OverlayType.MARKER,
+        google.maps.drawing.OverlayType.CIRCLE,
+        google.maps.drawing.OverlayType.POLYGON,
+        google.maps.drawing.OverlayType.POLYLINE,
+        google.maps.drawing.OverlayType.RECTANGLE,
+      ],
+    },
+    circleOptions: {
+      fillColor: '#ff0000',
+      fillOpacity: 0.6,
+      strokeWeight: 2,
+      clickable: false,
+      editable: true,
+      zIndex: 1,
+    },
+  });
+  drawingManager.setMap(map);
+
+  google.maps.event.addListener(drawingManager, 'overlaycomplete', (event: google.maps.drawing.OverlayCompleteEvent) => {
+    openDrawer(event, drawingManager);
+  });
 }
 
-// function createCircle(center: google.maps.LatLng, radius: number): google.maps.Circle {
-//   return new google.maps.Circle({
-//     strokeColor: '#FF0000',
-//     strokeOpacity: 0.8,
-//     strokeWeight: 2,
-//     fillColor: '#FF0000',
-//     fillOpacity: 0.35,
-//     center,
-//     radius,
-//   });
-// }
+export function setGoogleMap(
+  googleMap: google.maps.Map<Element>,
+  openDrawer: (
+    e: google.maps.drawing.OverlayCompleteEvent,
+    drawingManager: google.maps.drawing.DrawingManager,
+  ) => void,
+): void {
+  map = googleMap;
+  drawManager(openDrawer);
+}
+
+export function createCircle(center: google.maps.LatLng, radius: number): google.maps.Circle {
+  return new google.maps.Circle({
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35,
+    center,
+    radius,
+  });
+}
 
 function fromCoordinatesToGoogleMapPaths(p: Array<number[][]>): google.maps.LatLngLiteral[] {
   const [coordinates] = p;
@@ -50,6 +90,7 @@ function createPolygon(paths: google.maps.LatLngLiteral[]): google.maps.Polygon 
 export function placeMarkerAndPanTo(latLng: google.maps.LatLngLiteral): void {
   const marker = new google.maps.Marker({
     position: latLng,
+    animation: google.maps.Animation.DROP,
   });
   marker.setMap(map);
   map.setZoom(18);
